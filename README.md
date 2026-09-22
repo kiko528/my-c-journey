@@ -1,2 +1,43 @@
 # my-c-journey
 我的C语言学习成长记录
+2026/9/22
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+int main()
+{
+	int a = 0;
+	float b = 0;
+	scanf("%d""%f", &a, &b);//有几个占位符就对应几个变量
+	float c = a + b;//计算应写在输入之后
+	printf("%f\n", c);
+
+
+	return 0;
+}
+
+int main()
+{
+	int a = 0;
+	int b = 0;
+	while (scanf("%d""%d", &a, &b) == 2)//while后面不能跟分号，分号表示循环结束，双等号表示判断，一个为赋值
+	{
+		int c = a + b;
+		printf("c = %d\n", c);
+	}//while为函数语句，大括号里面的变量属于这个代码块局部变量
+
+
+	return 0;
+}
+日期：2026年9月22日
+今日学习内容
+基础输入输出：学习了 scanf 和 printf 的基本用法。
+变量类型：练习了 int（整型）和 float（浮点型）的定义与使用。
+循环结构：初步接触了 while 循环，实现了多次输入求和的功能。
+作用域：理解了局部变量的概念（大括号 {} 里面的变量只在该代码块内有效）。
+️ 踩坑记录与注意事项
+scanf 的占位符：scanf 里有几个占位符（如 %d、%f），后面就要对应几个变量的地址（&a, &b）。
+计算顺序：计算逻辑（如 c = a + b）必须写在输入（scanf）之后，否则计算的是初始值 0。
+while 循环语法：
+while 后面不能直接加分号 ;，否则循环体为空，程序会死循环或无反应。
+判断相等要用双等号 ==，单等号 = 是赋值。
+VS 编译问题：在 Visual Studio 中使用 scanf 需要在第一行加上 #define _CRT_SECURE_NO_WARNINGS，否则会报错。
