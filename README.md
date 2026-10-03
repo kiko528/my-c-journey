@@ -1,5 +1,5 @@
 # my-c-journey
-我的C语言学习成长记录
+我的C语言学习成长记录【我会发送我的学习痕迹并使用AI总结】
 2026/9/22
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
