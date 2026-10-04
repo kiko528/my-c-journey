@@ -712,3 +712,86 @@ int main()
             break;  // 满足条件，跳出循环
         }
     }
+
+
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+void game()
+{
+    int guess = 0;
+    int r = rand() % 100 + 1;  // 生成 1~100 的随机数
+    while (1)                  // 死循环，猜对才 break
+    {
+        printf("请输入你猜测的数字：\n");
+        scanf("%d", &guess);
+        if (guess < r)
+        {
+            printf("猜小了\n");
+        }
+        else if (guess > r)
+        {
+            printf("猜大了\n");
+        }
+        else
+        {
+            printf("恭喜你猜对了\n");
+            break;  // 猜对了，跳出 while(1)
+        }
+    }
+}
+
+int main()
+{
+    int input = 0;
+    srand((unsigned int)time(NULL));  // 用当前时间做随机种子
+    do
+    {
+        printf("------------------\n");
+        printf("------1 play------\n");
+        printf("------0 exit------\n");
+        printf("------------------\n");
+        printf("请选择：\n");
+        scanf("%d", &input);
+        switch (input)
+        {
+        case 1:
+            game();  // 调用游戏函数
+            break;
+        case 0:
+            break;  // 退出 do-while 循环，程序结束
+        default:
+            break;
+        }
+    } while (input);
+
+    return 0;
+}
+日期：2026年10月4日
+今日学习内容
+1. srand 与 rand —— 随机数生成
+C 语言没有内置的"随机数"关键字，需要借助两个函数配合使用：
+srand(unsigned int seed) —— 设置随机种子（"播种"）。seed 不同，rand() 产生的序列就不同。用 time(NULL) 作为种子，每次运行程序时种子都不同，所以每次生成的随机数也不同。
+rand() —— 返回一个 0 到 RAND_MAX 之间的伪随机整数。rand() % 100 + 1 可以把范围限制在 1~100。
+补充：
+随机生成a-b随机数方法：a + rand() % (b - a + 1)
+必须包含头文件：<stdlib.h>（srand/rand）和 <time.h>（time）。
+#include <stdlib.h>
+#include <time.h>
+
+srand((unsigned int)time(NULL));  // 用当前时间做种子，放在 main 开头一次即可
+int r = rand() % 100 + 1;         // 生成 1~100 的随机数
+关键细节：srand 只需要调用一次，放在 main 函数开头。如果每次循环都调用 srand，种子来不及变化，rand 会返回相同的"随机数"。
+**程序完整执行流程
+① main 函数开始 → ② 调用 srand(time(NULL)) 播种随机数 → ③ 进入 do-while 循环 → ④ 显示菜单 → ⑤ 读取用户输入 → ⑥ switch 判断：输入 1 则调用 game() → ⑦ game() 生成随机数 r → ⑧ 进入 while(1) 死循环，提示输入猜测 → ⑨ 比较大小并给出提示 → ⑩ 猜对了 break 跳出 game() → ⑪ 回到 do-while 循环开头，重新显示菜单 → ⑫ 输入 0，while(input) 为假，退出循环 → ⑬ 程序结束
+踩坑记录
+1. srand 必须调用一次：如果忘记调用 srand，rand() 每次运行都返回相同的序列（默认种子为 1）。如果每次循环都调用 srand，种子来不及变化，反而不随机了。
+2. rand() % 100 + 1 的范围：rand() % 100 生成 0~99，+1 后才是 1~100。如果题目要求 0~99 就只需 rand() % 100。
+3. time(NULL) 需要 #include <time.h>：忘记包含这个头文件会导致编译警告或错误（取决于编译器）。
+4. do-while 最后的分号：do-while 循环末尾必须加分号 ;，写成 while(input) 后面不加 semicolon 是常见语法错误。
+5. switch 中 case 的 break：每个 case 后面都要写 break，否则会发生"穿透"（fall-through），继续执行下一个 case 的代码。本程序中 case 0 和 default 虽然写了 break 但实际上不需要（因为后面没有代码了），但养成习惯每次都写。
+不太熟悉的部分
+srand 种子的原理：time(NULL) 返回的是当前时间的秒数（从 1970 年 1 月 1 日 0 时 0 分 0 秒到现在的秒数）。每次运行程序时这个值都不同，所以 srand 用不同的值"播种"，rand 就会生成不同的伪随机序列。如果手动 srand(1)，每次运行 rand 都会返回完全一样的数字序列。
+do-while 和 while 的区别：do-while 先执行后判断，至少执行一次；while 先判断后执行，可能一次都不执行。菜单场景适合用 do-while，因为至少要让用户看到一次菜单。
