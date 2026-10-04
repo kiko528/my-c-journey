@@ -1,5 +1,5 @@
 # my-c-journey
-我的C语言学习成长记录
+我的C语言学习成长记录【我会发送我的学习痕迹并使用AI总结】
 2026/9/22
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
@@ -714,7 +714,7 @@ int main()
     }
 
 
-#define _CRT_SECURE_NO_WARNINGS
+    #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -776,7 +776,9 @@ C 语言没有内置的"随机数"关键字，需要借助两个函数配合使�
 srand(unsigned int seed) —— 设置随机种子（"播种"）。seed 不同，rand() 产生的序列就不同。用 time(NULL) 作为种子，每次运行程序时种子都不同，所以每次生成的随机数也不同。
 rand() —— 返回一个 0 到 RAND_MAX 之间的伪随机整数。rand() % 100 + 1 可以把范围限制在 1~100。
 补充：
-随机生成a-b随机数方法：a + rand() % (b - a + 1)
+生成某个范围随机数：
+a + rand() % (b - a + 1)
+
 必须包含头文件：<stdlib.h>（srand/rand）和 <time.h>（time）。
 #include <stdlib.h>
 #include <time.h>
@@ -784,7 +786,7 @@ rand() —— 返回一个 0 到 RAND_MAX 之间的伪随机整数。rand() % 10
 srand((unsigned int)time(NULL));  // 用当前时间做种子，放在 main 开头一次即可
 int r = rand() % 100 + 1;         // 生成 1~100 的随机数
 关键细节：srand 只需要调用一次，放在 main 函数开头。如果每次循环都调用 srand，种子来不及变化，rand 会返回相同的"随机数"。
-**程序完整执行流程
+程序完整执行流程
 ① main 函数开始 → ② 调用 srand(time(NULL)) 播种随机数 → ③ 进入 do-while 循环 → ④ 显示菜单 → ⑤ 读取用户输入 → ⑥ switch 判断：输入 1 则调用 game() → ⑦ game() 生成随机数 r → ⑧ 进入 while(1) 死循环，提示输入猜测 → ⑨ 比较大小并给出提示 → ⑩ 猜对了 break 跳出 game() → ⑪ 回到 do-while 循环开头，重新显示菜单 → ⑫ 输入 0，while(input) 为假，退出循环 → ⑬ 程序结束
 踩坑记录
 1. srand 必须调用一次：如果忘记调用 srand，rand() 每次运行都返回相同的序列（默认种子为 1）。如果每次循环都调用 srand，种子来不及变化，反而不随机了。
