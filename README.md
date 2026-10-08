@@ -995,3 +995,100 @@ int arr[][5] —— 列数必须指定为 5，行数省略由编译器推断。
 int sz = sizeof(arr) / sizeof(arr[0]);
 4. 嵌套循环打印二维数组
 打印二维数组使用嵌套循环，外层遍历行，内层遍历列。嵌套循环的执行顺序是"先内后外"——外层每执行一次，内层完整执行一轮。
+
+
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <windows.h>   // Sleep 所在头文件(Windows)
+ 
+int main()
+{
+    // ========== 示例1：变长数组 VLA ==========
+    // 数组大小不再写死, 而是运行时由用户输入的 n 决定
+    int n = 0;
+    scanf("%d", &n);          // 先读入数组长度
+    int arr[n];               // 变长数组: 大小用变量 n(必须在 n 赋值之后定义)
+    int i = 0;
+    for (i = 0; i < n; i++)
+    {
+        arr[i] = i + 1;       // 填充 1 2 3 ... n
+    }
+    for (i = 0; i < n; i++)
+    {
+        printf("%d ", arr[i]); // 输出: 1 2 3 ... n
+    }
+    printf("\n");
+ 
+    // ========== 示例2：数组小练习(双端填充的遮罩效果) ==========
+    char arr1[] = { "I love li mu wan!!!" };   // 源字符串
+    char arr2[] = { "###################" };   // 显示用的字符数组(先用#占位)
+    int left = 0;                              // 左指针, 从最左端开始
+    int right = strlen(arr1) - 1;              // 右指针, 指向最后一个有效字符
+ 
+    while (left <= right)
+    {
+        arr2[left] = arr1[left];   // 左边把真实字符填进去
+        arr2[right] = arr1[right]; // 右边同步把真实字符填进去
+        printf("%s\n", arr2);      // 打印当前进度
+        Sleep(1000);               // 暂停 1000 毫秒(Windows 中首字母大写)
+        system("cls");             // 清屏, 制造"逐帧刷新"效果
+        left++;                    // 左指针右移
+        right--;                   // 右指针左移
+    }
+    // 循环结束后 arr2 已被 arr1 完全覆盖
+ 
+    return 0;
+}
+日期：2026年10月8日
+今日学习内容
+1. 变长数组 VLA (Variable Length Array)
+普通数组的长度必须是常量(如 int arr[10])，而变长数组允许用变量作为数组大小，大小在程序运行时才确定。
+int n = 0;
+scanf("%d", &n);   // 运行时才知道要多大
+int arr[n];        // 用变量 n 作为数组长度
+核心限制：必须在 n 已经被赋值之后才能定义 arr[n]，否则 n 是未初始化的垃圾值，数组大小随机。
+变长数组不能被显式初始化：int arr[n] = {0}; 在标准 C 里不允许(VLA 不能用初始化列表)。
+2. 数组小练习：双端填充的逐帧遮罩效果
+用两个变量 left / right 从字符串两端向中间逼近，每轮把 arr1 两端的真实字符填进 arr2，配合 Sleep + cls 形成"揭面纱"的动画效果。
+char arr1[] = { "I love li mu wan!!!" };  // 源
+char arr2[] = { "###################" };  // 占位显示
+int left = 0;
+int right = strlen(arr1) - 1;
+ 
+while (left <= right)
+{
+    arr2[left]  = arr1[left];   // 左端填充
+    arr2[right] = arr1[right];  // 右端同步填充
+    printf("%s\n", arr2);       // 打印当前状态
+    Sleep(1000);                // 停留 1 秒
+    system("cls");              // 清屏
+    left++;
+    right--;
+}
+left 从 0 往右，right 从末尾往左，每轮各前进一步，直到 left > right 相遇停止。
+strlen(arr1) 返回不含结束符 \0 的有效字符个数，所以最后一个下标要 -1。
+3. strlen 求字符串长度
+strlen 在 string.h 中，统计从首字符到第一个 \0 之前的字符个数，不包含 \0 本身。
+对 "I love li mu wan!!!" 而言 strlen 返回 19，故最后一个字符下标是 19 - 1 = 18。
+对比 sizeof：sizeof 会把结尾 \0 也算进去，strlen 不会，二者含义不同。
+4. Sleep 与 system("cls") 实现逐帧动画
+Sleep(1000)：Windows 下首字母必须大写 S，参数单位是毫秒，1000 毫秒即 1 秒。
+system("cls")：调用系统命令清屏，需包含 stdlib.h；配合 Sleep 让画面刷下一帧。
+5. 程序完整执行流程拆解
+第1步：读入 n，按 n 建立变长数组 arr，填入 1~n 并输出。
+第2步：定义 arr1(源串) 和 arr2(全#占位串)。
+第3步：left=0，right=strlen(arr1)-1=18。
+第4步：进入 while 循环，判断 left <= right。
+第5步：把 arr1 两端字符填入 arr2 对应位置。
+第6步：打印 arr2，停留 1 秒后 cls 清屏。
+第7步：left++、right--，回到第4步继续，直到 left > right 退出。
+第8步：左右指针在中间相遇，arr2 已被 arr1 完全覆盖。
+踩坑记录
+变长数组在 n 赋值之前定义：int n; int arr[n]; —— n 未初始化，arr 大小是垃圾值，行为不可预测。一定先 scanf 读 n 再定义。
+变长数组写 int arr[n] = {0};：标准 C 中 VLA 不支持初始化列表，多数编译器报错。需清零改用 calloc 或 for 循环填 0。
+把 Sleep 写成小写 sleep：Windows 的 <windows.h> 提供 Sleep(毫秒)；小写 sleep 是 Linux 的(单位秒)，Windows 下找不到函数。
+strlen 忘记减 1 当下标：right = strlen(arr1) 会越界指向 \0，应写 strlen(arr1) - 1 才指向最后一个真实字符。
+混淆 sizeof 与 strlen：sizeof(字符数组) 含结尾 \0，strlen 不含；求有效长度下标用 strlen。
+system("cls") 前没包含 stdlib.h，或 Sleep 前没包含 windows.h，编译报"未声明的函数"。
