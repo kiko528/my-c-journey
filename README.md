@@ -1092,3 +1092,78 @@ strlen 在 string.h 中，统计从首字符到第一个 \0 之前的字符个�
 strlen 忘记减 1 当下标：right = strlen(arr1) 会越界指向 \0，应写 strlen(arr1) - 1 才指向最后一个真实字符。
 混淆 sizeof 与 strlen：sizeof(字符数组) 含结尾 \0，strlen 不含；求有效长度下标用 strlen。
 system("cls") 前没包含 stdlib.h，或 Sleep 前没包含 windows.h，编译报"未声明的函数"。
+
+
+#include <stdio.h>
+ 
+int main()
+{
+    /* ===== 查找一：顺序查找（线性查找）=====
+       从下标 0 开始，一个元素一个元素往后比，找到就输出下标并 break。 */
+    int arr[] = { 1 , 2 , 3 , 4 , 5 , 6 , 7 , 8 , 9 , 10 };
+    int k = 7;                              // 要找的目标值
+    int sz = sizeof(arr) / sizeof(arr[0]);  // 元素个数 = 整组大小 / 单个大小
+    int i = 0;
+    for (i = 0; i < sz; i++)
+    {
+        if (arr[i] == k)   // 这里要用判断符 == ，不是赋值 =
+        {
+            printf("找到了，下标是%d\n", i);
+            break;         // 找到就跳出，不用再往后找
+        }
+    }
+    // 关键点：for 正常结束（没触发 break）时，i 会自增到等于 sz
+    // 用 i == sz 判断"循环走完了一轮都没找到"
+    if (i == sz)
+    {
+        printf("没找到\n");
+    }
+ 
+    /* ===== 查找二：二分查找（折半查找）=====
+       前提：数组必须已经有序（升序）。每次取中间值和 k 比，
+       范围一次砍一半，所以最快。 */
+    int left = 0;
+    int right = sz - 1;                 // 右边界是"最后一个元素的下标"
+    while (left <= right)               // left == right 时区间还剩一个元素，仍要查
+    {
+        // mid 这样算可以防止 left+right 之和超过 int 最大值而溢出
+        int mid = (right - left) / 2 + left;
+        if (arr[mid] < k)               // 中间值偏小，答案在右半边
+        {
+            left = mid + 1;             // 把左边界抬到 mid 右边
+        }
+        else if (arr[mid] > k)          // 中间值偏大，答案在左半边
+        {
+            right = mid - 1;            // 把右边界压到 mid 左边
+        }
+        else                            // arr[mid] == k，命中
+        {
+            printf("找到了，下标是%d\n", mid);
+            break;
+        }
+    }
+    // 关键点：循环结束有两种情况——命中 break，或区间被压空(left > right)
+    // 用 left > right 判断"区间已经空了还没找到"
+    if (left > right)
+    {
+        printf("没有找到\n");
+    }
+ 
+    return 0;
+}
+日期：2026.10.9
+二分查找（折半查找）
+把有序数组想成"猜数字"：每次先取区间中间位置和 k 比，比 k 小就往右半边找，比 k 大就往左半边找，一次把搜索范围砍一半。
+硬性前提：数组必须是有序的（这里默认升序）。无序数组要先排序才能用二分。
+时间复杂度：O(log n)。100 万个元素最多约 20 次就能锁定，比顺序查找快几个数量级。
+三行核心：范围 [left, right]；mid 处比 k 小 → left=mid+1；比 k 大 → right=mid-1；相等 → 命中。
+int mid = (right - left) / 2 + left;  // 推荐：防溢出
+int mid = (left + right) / 2;         // 也正确，但 left+right 很大时可能溢出
+两种写法在正常数据下结果一样。(left+right)/2 当 left、right 都是接近 INT_MAX 的下标时，相加会溢出成负数导致 mid 越界；(right-left)/2+left 先做减法不会溢出，是更稳的写法。
+· == 写成 =：if (arr[i] = k) 是赋值，条件恒真还改坏了数组——顺序/二分查找都最容易栽在这。
+· 二分数组没排序：二分的前提是有序，对乱序数组用二分结果完全不可信。
+· right 初值写成 sz：应取 sz-1（最后一个元素下标），写成 sz 会多算一个并不存在的元素，甚至越界。
+· 循环条件用 left < right：区间只剩一个元素（left==right）时会被提前跳过，漏查最后一个，必须用 left <= right。
+· left/right 更新用 mid 而非 mid±1：left=mid 或 right=mid 在区间收缩到最后时可能原地不动，造成死循环，必须 mid+1 / mid-1。
+· (left+right)/2 溢出：下标极大时相加溢出成负数，用 (right-left)/2+left 更稳。
+· 找不到时的判据用错：顺序查找用 i==sz、二分用 left>right，别把两者写反。
