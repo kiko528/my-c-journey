@@ -1485,3 +1485,120 @@ y == 2 写成判断年份：应该是 m == 2 判断月份，这个笔误会让�
 链式访问可读性差：printf("%d\n", printf("%d\n", c)) 虽然能跑，但实际开发中不建议这样写，拆成两行更清晰。
 误以为 printf 没有返回值：printf 返回 int 类型（打印字符数），scanf 也返回 int（成功读取的项数），这些库函数的返回值经常被忽略。
 
+
+时间：2026.10.17
+文件1：Add.h（头文件 — 放函数声明）
+c
+
+编辑
+
+
+
+#ifndef ADD_H
+#define ADD_H
+
+// 声明外部函数，告诉编译器 Add 函数在其他地方定义
+extern double Add(double a, double b);
+
+#endif
+文件2：Add.c（源文件 — 放函数定义）
+c
+
+编辑
+
+
+
+#include "Add.h"
+
+// 函数定义：求两个 double 的和
+double Add(double a, double b)
+{
+    return a + b;
+}
+文件3：main.c（主文件 — 放 main 函数）
+c
+
+编辑
+
+
+
+#include <stdio.h>
+#include "Add.h"   // 双引号包含自定义头文件
+
+int main()
+{
+    double a = 0.0;
+    double b = 0.0;
+
+    // scanf 读 double 必须用 %lf，printf 输出用 %f 即可
+    scanf("%lf %lf", &a, &b);
+
+    double c = Add(a, b);
+    printf("%f\n", c);
+
+    return 0;
+}
+补充：static 用法演示（写在同一个文件里即可）
+c
+
+编辑
+
+
+
+#include <stdio.h>
+
+// static 修饰全局变量：限制只能在本文件使用，其他文件 extern 也访问不到
+static int g_val = 100;
+
+// static 修饰函数：限制只能在本文件调用，其他文件无法链接
+static void show(void)
+{
+    printf("hello\n");
+}
+
+// static 修饰局部变量：生命周期变长，只初始化一次，函数结束后值不销毁
+void counter(void)
+{
+    static int count = 0;   // 只初始化一次
+    count++;
+    printf("count = %d\n", count);
+}
+
+int main()
+{
+    counter();   // 输出 count = 1
+    counter();   // 输出 count = 2
+    counter();   // 输出 count = 3
+    return 0;
+}
+小项目写一个 main.c 就够了，但项目变大后，把所有函数塞进一个文件会又长又乱。拆成多个 .c 文件（如 Add.c、Sort.c、main.c）配合头文件 .h，结构清晰、方便团队协作。
+#include "Add.h"：双引号 " " 表示优先在当前项目目录下找头文件（自定义头文件用双引号）；尖括号 < > 表示去系统目录找（如 <stdio.h>）。
+extern 关键字：用于声明"这个符号（变量/函数）是在别的文件里定义的"。函数默认就带 extern 属性，所以头文件里写 double Add(double, double); 不加 extern 也能用，但加上更明确。
+| 修饰对象 | 作用 |
+|----------|------|
+| 局部变量 | 生命周期延长到整个程序运行期，只初始化一次，函数结束后值保留（下次调用接着用） |
+| 全局变量 | 作用域限制在本文件，其他文件即使 `extern` 也链接不到 |
+| 函数 | 作用域限制在本文件，其他文件无法调用（实现"隐藏"） |
+3. scanf 读 double 必须用 %lf
+scanf("%lf", &a)：读 double 必须写 %lf（long float），写 %f 会读错（%f 是给 float 用的）。
+printf("%f", a)：输出时 %f 和 %lf 都可以，%f 更常用。
+这是今天特意复习的点，也是刷题时最容易翻车的地方之一。
+| 知识点 | 核心内容 |
+|--------|----------|
+| 多文件编程 | 函数声明放 `.h`，函数定义放 `.c`，`main` 所在文件 `#include` 头文件 |
+| `#include " "` vs `< >` | 双引号找自定义/项目头文件；尖括号找系统头文件 |
+| `extern` | 声明外部符号（变量/函数），告诉编译器"这东西在别处定义" |
+| `static` 修饰局部变量 | 只初始化一次，函数结束值不销毁，下次调用沿用 |
+| `static` 修饰全局变量/函数 | 限制作用域在本文件，实现信息隐藏 |
+| `scanf` 读 `double` | 必须用 `%lf`，不能用 `%f`；`printf` 输出用 `%f` 即可 |
+| 链接过程 | 多个 `.c` 文件分别编译成 `.obj`，再由链接器合并成一个 `.exe` |
+
+
+四、容易踩坑的地方
+scanf 读 double 写成 %f：%f 是给 float 用的，读 double 必须 %lf，否则数据读入错误。这个坑在刷题时非常常见。
+头文件重复包含：同一个头文件被多个文件 #include 可能导致重复声明。用 #ifndef ADD_H / #define ADD_H / #endif 头文件保护宏避免。
+static 局部变量重复初始化：static int count = 0; 只在第一次调用时执行初始化，后面调用直接跳过这行，值沿用上次结束时的值。
+static 全局变量被其他文件 extern：static 全局变量作用域仅限本文件，其他文件 extern 也链接不到，链接阶段会报"未定义符号"错误。
+函数定义和声明返回类型不一致：头文件里声明 double Add(...)，.c 里定义成 int Add(...)，链接可能出问题。
+多文件编译时漏掉某个 .c：VS 里要把所有 .c 文件都加入项目，否则链接时找不到函数定义。
+误以为 extern 是定义：extern double Add(...) 只是声明（告诉编译器有这么个函数），真正的定义（函数体）必须在某个 .c 文件里。
